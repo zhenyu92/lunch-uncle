@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 import {
   formatForecast,
   formatBusArrivals,
+  formatPlaces,
   haversineMetres,
+  CT_HUB_2,
 } from "../src/tools.js";
 
 test("formatForecast picks the requested area", () => {
@@ -54,4 +56,32 @@ test("haversineMetres measures CT Hub 2 to Lavender MRT at under 600 m", () => {
   const lavenderMrt = { latitude: 1.3073, longitude: 103.8631 };
   const distance = haversineMetres(ctHub2, lavenderMrt);
   assert.ok(distance > 400 && distance < 550, `got ${distance}`);
+});
+
+test("formatPlaces reports whether a place is open now", () => {
+  const places = [
+    {
+      displayName: { text: "Sungei Road Laksa" },
+      rating: 4.3,
+      location: CT_HUB_2,
+      currentOpeningHours: { openNow: true },
+    },
+    {
+      displayName: { text: "Closed For Renovation" },
+      rating: 4.9,
+      location: CT_HUB_2,
+      currentOpeningHours: { openNow: false },
+    },
+  ];
+
+  assert.deepEqual(formatPlaces(places, CT_HUB_2), [
+    { name: "Sungei Road Laksa", rating: 4.3, distance_m: 0, open_now: true },
+    { name: "Closed For Renovation", rating: 4.9, distance_m: 0, open_now: false },
+  ]);
+});
+
+test("formatPlaces falls back cleanly on missing fields", () => {
+  assert.deepEqual(formatPlaces([{}], CT_HUB_2), [
+    { name: "Unnamed", rating: null, distance_m: null, open_now: null },
+  ]);
 });
