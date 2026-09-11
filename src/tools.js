@@ -28,7 +28,7 @@ export const toolDefinitions = [
     function: {
       name: "find_lunch_places",
       description:
-        "Search for places to eat near CT Hub 2. Returns name, rating, distance and whether it is open now.",
+        "Search for places to eat near CT Hub 2. Returns name, rating, distance in metres from the office, and open_now, which is true, false, or null when opening hours are unknown.",
       parameters: {
         type: "object",
         properties: {

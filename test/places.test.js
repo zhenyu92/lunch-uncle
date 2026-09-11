@@ -51,3 +51,16 @@ test("reports distances measured from CT Hub 2", async () => {
     stub.restore();
   }
 });
+
+test("reports an error instead of throwing when Places rejects the request", async () => {
+  const original = globalThis.fetch;
+  globalThis.fetch = async () => ({ ok: false, status: 429, json: async () => ({}) });
+  try {
+    const raw = await executeTool("find_lunch_places", { query: "laksa" }, {
+      GOOGLE_PLACES_API_KEY: "test-key",
+    });
+    assert.deepEqual(JSON.parse(raw), { error: "Places API returned 429" });
+  } finally {
+    globalThis.fetch = original;
+  }
+});
