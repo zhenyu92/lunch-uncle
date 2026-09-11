@@ -28,7 +28,7 @@ export const toolDefinitions = [
     function: {
       name: "find_lunch_places",
       description:
-        "Search for places to eat near CT Hub 2. Returns name, rating, distance and whether it is open now.",
+        "Search for places to eat near CT Hub 2. Returns name, rating, distance in metres from the office, and open_now, which is true, false, or null when opening hours are unknown.",
       parameters: {
         type: "object",
         properties: {
@@ -100,15 +100,13 @@ export async function executeTool(name, args, env) {
 // ---------------------------------------------------------------------------
 
 async function findLunchPlaces({ query, open_now = false }, env) {
-  const centre = { latitude: 1.3236, longitude: 103.9273 };
-
   const body = {
     textQuery: query,
     includedType: "restaurant",
     openNow: open_now,
     pageSize: MAX_PLACES,
     locationBias: {
-      circle: { center: centre, radius: SEARCH_RADIUS_METRES },
+      circle: { center: CT_HUB_2, radius: SEARCH_RADIUS_METRES },
     },
   };
 
@@ -128,17 +126,18 @@ async function findLunchPlaces({ query, open_now = false }, env) {
   }
 
   const data = await res.json();
-  return { places: formatPlaces(data.places ?? [], centre) };
+  return { places: formatPlaces(data.places ?? [], CT_HUB_2) };
 }
 
 /**
  * Shape Places API results into the fields Uncle needs.
  */
 export function formatPlaces(places, origin) {
-  return places.map(({ displayName, rating, location }) => ({
+  return places.map(({ displayName, rating, location, currentOpeningHours }) => ({
     name: displayName?.text ?? "Unnamed",
     rating: rating ?? null,
-    distance_m: Math.round(haversineMetres(origin, location)),
+    distance_m: location ? Math.round(haversineMetres(origin, location)) : null,
+    open_now: currentOpeningHours?.openNow ?? null,
   }));
 }
 
