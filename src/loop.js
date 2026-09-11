@@ -51,6 +51,8 @@ export async function runLoop(history, message, env) {
         content: result,
       });
     }
+
+    round += 1;
   }
 
   return "Uncle tried too many times already. Ask something simpler.";
